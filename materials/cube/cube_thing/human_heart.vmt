@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "cube/cube_thing/human_heart"
+	"$surfaceprop" "flesh"
+}
