@@ -1,0 +1,14 @@
+{
+    "title": "[TTT2] Kiss [WEAPON]",
+    "type": "weapon",
+    "tags": [
+        "realism",
+        "fun"
+    ],
+    "description": "Kiss and have fun with everyone.",
+    "ignore": [
+        "*.psd",
+        "*.vcproj",
+        "*.svn"
+    ]
+}
