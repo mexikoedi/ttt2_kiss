@@ -339,9 +339,6 @@ function SWEP:Kiss()
             else
                 victim:SetHealth(victim:Health() - dmg)
             end
-        else
-            owner:SetHealth(100)
-            victim:SetHealth(100)
         end
     end
 
