@@ -323,9 +323,12 @@ function SWEP:Kiss()
             elseif owner:Health() - dmg >= 100 and victim:Health() - dmg <= 100 then
                 owner:SetHealth(100)
                 victim:SetHealth(victim:Health() - dmg)
-            elseif victim:Health() - dmg >= 100 and owner:Health() - dmg <= 100 then
-                victim:SetHealth(100)
+            elseif owner:Health() - dmg <= 100 and victim:Health() - dmg >= 100 then
                 owner:SetHealth(owner:Health() - dmg)
+                victim:SetHealth(100)
+            elseif owner:Health() - dmg <= 100 and victim:Health() - dmg <= 100 then
+                owner:SetHealth(owner:Health() - dmg)
+                victim:SetHealth(victim:Health() - dmg)
             end
         elseif dmg < 0 and owner:Health() < 100 and victim:Health() >= 100 then
             if owner:Health() - dmg >= 100 then
