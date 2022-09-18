@@ -25,7 +25,7 @@ if SERVER then
 end
 
 SWEP.Base = "weapon_tttbase"
-SWEP.Kind = WEAPON_NADE
+SWEP.Kind = WEAPON_SPECIAL
 SWEP.InLoadoutFor = nil
 SWEP.CanBuy = nil
 SWEP.LimitedStock = true
