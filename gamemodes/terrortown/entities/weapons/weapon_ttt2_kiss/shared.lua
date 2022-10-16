@@ -45,7 +45,7 @@ SWEP.Purpose = "Kiss and have fun with everyone."
 SWEP.ViewModelFOV = 80
 SWEP.ViewModelFlip = false
 SWEP.NoSights = false
-SWEP.AllowDrop = false
+SWEP.AllowDrop = true
 SWEP.Spawnable = false
 SWEP.AdminOnly = false
 SWEP.AdminSpawnable = false
@@ -168,10 +168,6 @@ function SWEP:SecondaryAttack()
     if SERVER and GetConVar("ttt2_kiss_secondary_sound"):GetBool() then
         owner:EmitSound(sounds2[math.random(#sounds2)])
     end
-end
-
-function SWEP:OnDrop()
-    self:Remove()
 end
 
 function SWEP:Deploy()
