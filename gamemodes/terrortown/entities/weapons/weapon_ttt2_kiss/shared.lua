@@ -411,6 +411,7 @@ if CLIENT then
 
     function SWEP:GetKissPos()
         local owner = self:GetOwner()
+        if not IsValid(owner) then return end
         local victim = self.lastKissVictim
         local ep, ea = owner:EyePos(), owner:EyeAngles()
 
