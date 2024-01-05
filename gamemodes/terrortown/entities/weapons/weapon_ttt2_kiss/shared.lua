@@ -30,7 +30,6 @@ SWEP.InLoadoutFor = nil
 SWEP.CanBuy = nil
 SWEP.LimitedStock = true
 SWEP.Icon = "vgui/ttt/weapon_kiss"
-
 SWEP.EquipMenuData = {
     type = "item_weapon",
     name = "ttt2_kiss_name",
@@ -75,11 +74,8 @@ SWEP.KissAngles = Angle(-8, 0, 0)
 local kiss_hull = Vector(8, 8, 8)
 local prepare_sound = "kiss_prepare.wav"
 local nextAttack = 0
-
 local sounds = {"kiss_start_1.wav", "kiss_start_2.wav", "kiss_start_3.wav", "kiss_start_4.wav", "kiss_start_5.wav", "kiss_start_6.wav",}
-
 local sounds2 = {"kiss_meme_1.wav", "kiss_meme_2.wav", "kiss_meme_3.wav",}
-
 SWEP.ActInfo = {
     [ACT_VM_DRAW] = {
         length = 0.8
@@ -90,10 +86,7 @@ SWEP.ActInfo = {
 }
 
 function SWEP:Initialize()
-    if CLIENT then
-        self:AddHUDHelp("ttt2_kiss_help1", "ttt2_kiss_help2", true)
-    end
-
+    if CLIENT then self:AddHUDHelp("ttt2_kiss_help1", "ttt2_kiss_help2", true) end
     if SERVER then
         self.Primary.ClipSize = GetConVar("ttt2_kiss_clipSize"):GetInt()
         self.Primary.DefaultClip = GetConVar("ttt2_kiss_ammo"):GetInt()
@@ -108,15 +101,12 @@ function SWEP:PrimaryAttack()
     local pos = owner:GetShootPos()
     local dir = owner:GetAimVector()
     if nextAttack > ct then return end
-
     if SERVER and GetRoundState() ~= ROUND_ACTIVE or GetRoundState() == ROUND_PREP or GetRoundState() == ROUND_WAIT or GetRoundState() == ROUND_POST then
         owner:ChatPrint("Round is not active, you can't use this weapon!")
-
         return
     end
 
     dir:Mul(self.KissDistance)
-
     local tr = util.TraceLine({
         start = pos,
         endpos = pos + dir,
@@ -138,47 +128,27 @@ function SWEP:PrimaryAttack()
     if not self:CanKiss(tr.Entity) then return end
     self:SetKissVictim(tr.Entity)
     self:SetNextKiss(ct + self.KissTime)
-
-    if SERVER and GetConVar("ttt2_kiss_primary_sound"):GetBool() then
-        owner:EmitSound(sounds[math.random(#sounds)])
-    end
-
+    if SERVER and GetConVar("ttt2_kiss_primary_sound"):GetBool() then owner:EmitSound(sounds[math.random(#sounds)]) end
     self:PlayActivity(ACT_VM_PRIMARYATTACK)
     self:SetHoldType("pistol")
     self:TakePrimaryAmmo(1)
-
-    if SERVER and self:Clip1() <= 0 then
-        timer.Simple(GetConVar("ttt2_kiss_length"):GetFloat() + 0.1, function()
-            if owner:IsActive() then
-                self:Remove()
-            end
-        end)
-    end
-
+    if SERVER and self:Clip1() <= 0 then timer.Simple(GetConVar("ttt2_kiss_length"):GetFloat() + 0.1, function() if owner:IsActive() then self:Remove() end end) end
     nextAttack = ct + GetConVar("ttt2_kiss_delay"):GetFloat()
 end
 
 SWEP.NextSecondaryAttack = 0
-
 function SWEP:SecondaryAttack()
     if self.NextSecondaryAttack > CurTime() then return end
     self.NextSecondaryAttack = CurTime() + self.Secondary.Delay
     local owner = self:GetOwner()
-
-    if SERVER and GetConVar("ttt2_kiss_secondary_sound"):GetBool() then
-        owner:EmitSound(sounds2[math.random(#sounds2)])
-    end
+    if SERVER and GetConVar("ttt2_kiss_secondary_sound"):GetBool() then owner:EmitSound(sounds2[math.random(#sounds2)]) end
 end
 
 function SWEP:Deploy()
     local owner = self:GetOwner()
     self:PlayActivity(ACT_VM_DRAW)
-
     if SERVER then
-        if GetConVar("ttt2_kiss_prepare_sound"):GetBool() then
-            owner:EmitSound(prepare_sound)
-        end
-
+        if GetConVar("ttt2_kiss_prepare_sound"):GetBool() then owner:EmitSound(prepare_sound) end
         owner:DrawWorldModel(false)
     end
 
@@ -186,19 +156,16 @@ function SWEP:Deploy()
         local vm = owner:GetViewModel()
         vm:SetPoseParameter("idle_pose", 0)
     end
-
     return true
 end
 
 function SWEP:Holster()
     local owner = self:GetOwner()
-
     if SERVER and IsValid(owner) then
         owner:StopSound("kiss_meme_1.wav")
         owner:StopSound("kiss_meme_2.wav")
         owner:StopSound("kiss_meme_3.wav")
     end
-
     return not self:GetKissInfo()
 end
 
@@ -208,14 +175,12 @@ function SWEP:Think()
     local ct = CurTime()
     local ft = FrameTime()
     local idleTime = self:GetNextIdle()
-
     if idleTime > 0 and ct > idleTime then
         vm:SendViewModelMatchingSequence(vm:LookupSequence("idle"))
         self:UpdateNextIdle()
     end
 
     local nextKissTime = self:GetNextKiss()
-
     if nextKissTime > 0 and ct > nextKissTime then
         self:Kiss()
         self:SetNextKiss(0)
@@ -223,7 +188,6 @@ function SWEP:Think()
 
     local kissing = self:GetNextPrimaryFire() > ct
     local victim = self:GetKissVictim()
-
     if IsValid(victim) and (not kissing or not self:CanKiss(victim)) then
         self:AbortKiss()
         kissing = false
@@ -235,11 +199,10 @@ function SWEP:Think()
         if self.KissDamping <= 0 then
             self._kissMult = kissing and 1 or 0
         else
-            self._kissMult = Lerp(ft * (1 / self.KissDamping), self._kissMult, kissing and 1 or 0)
+            self._kissMult = Lerp(ft * 1 / self.KissDamping, self._kissMult, kissing and 1 or 0)
         end
 
         self.KissMult = math.EaseInOut(self._kissMult, self.AnimEaseIn, self.AnimEaseOut)
-
         if IsValid(victim) and self:ShouldAnimateKiss() then
             self.lastKissVictim = victim
         elseif not self:ShouldAnimateKiss() then
@@ -264,19 +227,14 @@ function SWEP:UpdateNextIdle()
 end
 
 local function IsLookingAt(ent, pos)
-    if isentity(pos) then
-        pos = pos:EyePos()
-    end
-
+    if isentity(pos) then pos = pos:EyePos() end
     local diff = pos - ent:EyePos()
-
     return ent:EyeAngles():Forward():Dot(diff) / diff:Length() >= 0.25
 end
 
 local function GetKissDistance(kisser, victim)
     local ep = kisser:EyePos()
     ep:Sub(victim:EyePos())
-
     return ep:Length()
 end
 
@@ -285,27 +243,23 @@ function SWEP:CanKiss(victim)
     local owner = self:GetOwner()
     local friendEnt = victim:IsNPC()
     if not (friendEnt or victim:IsPlayer()) then return false end
-
     if not IsLookingAt(victim, owner) then
         return false
     elseif GetKissDistance(owner, victim) > self.KissDistance then
         return false
     end
-
     return true
 end
 
 function SWEP:Kiss()
     local victim = self:GetKissVictim()
     if not IsValid(victim) then return end
-
     if SERVER then
         local owner = self:GetOwner()
         local dmginfo = DamageInfo()
         local dmg = 0
         local inflictor = ents.Create("weapon_ttt2_kiss")
         dmg = GetConVar("ttt2_kiss_damage"):GetInt()
-
         if dmg >= 0 then
             dmginfo:SetAttacker(owner)
             dmginfo:SetDamageType(DMG_GENERIC)
@@ -353,7 +307,6 @@ end
 function SWEP:GetKissInfo()
     local kiss = self:GetNextPrimaryFire() > CurTime()
     if kiss then return true, self:GetKissVictim() end
-
     return false, nil
 end
 
@@ -366,7 +319,6 @@ end
 if CLIENT then
     SWEP._kissMult = 0
     SWEP.KissMult = 0
-
     local npc_attachment_lookup = {
         {
             attachment = "mouth",
@@ -386,10 +338,8 @@ if CLIENT then
     }
 
     local found_bones = {}
-
     local function FindHeadBone(ent)
         local name = ent:GetClass()
-
         if isnumber(found_bones[name]) then
             return found_bones[name]
         elseif found_bones[name] == false then
@@ -398,10 +348,8 @@ if CLIENT then
 
         for i = 0, ent:GetBoneCount() - 1 do
             local boneName = ent:GetBoneName(i)
-
             if boneName and boneName:lower():match("head") then
                 found_bones[name] = i
-
                 return i
             end
         end
@@ -414,17 +362,13 @@ if CLIENT then
         if not IsValid(owner) then return end
         local victim = self.lastKissVictim
         local ep, ea = owner:EyePos(), owner:EyeAngles()
-
         if IsValid(victim) and self:ShouldAnimateKiss() then
             local attID, pos, ang
-
             for i = 1, #npc_attachment_lookup do
                 local tbl = npc_attachment_lookup[i]
                 attID = victim:LookupAttachment(tbl.attachment)
-
                 if attID and attID >= 0 then
                     local att = victim:GetAttachment(attID)
-
                     if att then
                         pos, ang = att.Pos, att.Ang
                         ang:RotateAroundAxis(ang:Right(), tbl.angles.p)
@@ -440,7 +384,6 @@ if CLIENT then
 
             if not pos or not ang then
                 local boneID = FindHeadBone(victim)
-
                 if boneID then
                     pos = victim:GetBonePosition(boneID)
                 else
@@ -457,10 +400,8 @@ if CLIENT then
             ang:RotateAroundAxis(ang:Right(), self.KissAngles.p)
             ang:RotateAroundAxis(ang:Up(), self.KissAngles.y)
             ang:RotateAroundAxis(ang:Forward(), self.KissAngles.r)
-
             return pos, ang
         end
-
         return ep, ea
     end
 
@@ -468,14 +409,13 @@ if CLIENT then
         local ft = FrameTime()
         local attID = vm:LookupAttachment("camera")
         local act = vm:GetSequenceActivity(vm:GetSequence())
-
         if attID and attID >= 0 and not ply:KeyDown(IN_ZOOM) then
             self.AttData = vm:GetAttachment(attID)
             local attpos = self.AttData.Pos
             local attang = self.AttData.Ang
             local vm_origin = vm:GetPos()
             local vm_angles = vm:GetAngles()
-            local mult = (self.ViewModelFOV / ply:GetFOV()) * self.CameraViewMult
+            local mult = self.ViewModelFOV / ply:GetFOV() * self.CameraViewMult
             attpos:Sub(vm_origin)
             attang:RotateAroundAxis(attang:Up(), -90)
             attang:Sub(vm_angles)
@@ -501,7 +441,7 @@ if CLIENT then
     end
 
     function SWEP:PostDrawViewModel(vm, wep, ply)
-        local vm_depth = (self.ViewModelFOV / ply:GetFOV()) * (1 - self.KissDepth * self.KissMult)
+        local vm_depth = self.ViewModelFOV / ply:GetFOV() * (1 - self.KissDepth * self.KissMult)
         local hands = ply:GetHands()
         render.SetBlend(1)
         render.DepthRange(0, vm_depth)
@@ -515,7 +455,6 @@ if CLIENT then
             origin = LerpVector(self.KissMult, origin, pos)
             angles = LerpAngle(self.KissMult, angles, ang)
         end
-
         return origin, angles
     end
 
@@ -525,14 +464,12 @@ if CLIENT then
 
     function SWEP:CalcView(ply, origin, angles, fov)
         if ply:GetViewEntity() ~= ply then return end
-
         if self:ShouldAnimateKiss() then
             local pos, ang = self:GetKissPos()
             origin = LerpVector(self.KissMult, origin, pos)
             angles = LerpAngle(self.KissMult, angles, ang)
             fov = fov - self.KissMult * fov * self.KissFOVDecrease
         end
-
         return origin, angles, fov
     end
 end
