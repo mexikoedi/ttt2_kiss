@@ -12,16 +12,8 @@ if SERVER then
     resource.AddFile("sound/kiss_meme_1.wav")
     resource.AddFile("sound/kiss_meme_2.wav")
     resource.AddFile("sound/kiss_meme_3.wav")
-    resource.AddFile("models/weapons/c_kiss.dx80.vtx")
-    resource.AddFile("models/weapons/c_kiss.dx90.vtx")
     resource.AddFile("models/weapons/c_kiss.mdl")
-    resource.AddFile("models/weapons/c_kiss.sw.vtx")
-    resource.AddFile("models/weapons/c_kiss.vvd")
-    resource.AddFile("models/humanheart/human_heart.dx80.vtx")
-    resource.AddFile("models/humanheart/human_heart.dx90.vtx")
     resource.AddFile("models/humanheart/human_heart.mdl")
-    resource.AddFile("models/humanheart/human_heart.sw.vtx")
-    resource.AddFile("models/humanheart/human_heart.vvd")
 end
 
 SWEP.Base = "weapon_tttbase"
@@ -101,7 +93,7 @@ function SWEP:PrimaryAttack()
     local pos = owner:GetShootPos()
     local dir = owner:GetAimVector()
     if nextAttack > ct then return end
-    if SERVER and GetRoundState() ~= ROUND_ACTIVE or GetRoundState() == ROUND_PREP or GetRoundState() == ROUND_WAIT or GetRoundState() == ROUND_POST then
+    if SERVER and GetRoundState() ~= ROUND_ACTIVE then
         owner:ChatPrint("Round is not active, you can't use this weapon!")
         return
     end
