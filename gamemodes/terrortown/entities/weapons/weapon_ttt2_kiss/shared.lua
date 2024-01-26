@@ -78,7 +78,7 @@ SWEP.ActInfo = {
 }
 
 function SWEP:Initialize()
-    if CLIENT then self:AddHUDHelp("ttt2_kiss_help1", "ttt2_kiss_help2", true) end
+    if CLIENT then self:AddTTT2HUDHelp("ttt2_kiss_help1", "ttt2_kiss_help2") end
     if SERVER then
         self.Primary.ClipSize = GetConVar("ttt2_kiss_clipSize"):GetInt()
         self.Primary.DefaultClip = GetConVar("ttt2_kiss_ammo"):GetInt()

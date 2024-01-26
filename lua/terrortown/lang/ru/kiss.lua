@@ -1,8 +1,8 @@
 local L = LANG.GetLanguageTableReference("ru")
 L["ttt2_kiss_name"] = "Поцелуй"
 L["ttt2_kiss_desc"] = "Целуйте всех, кто вам нравится!"
-L["ttt2_kiss_help1"] = "{primaryfire}: поцелуй"
-L["ttt2_kiss_help2"] = "{secondaryfire}: издать случайный звук"
+L["ttt2_kiss_help1"] = "Поцелуй"
+L["ttt2_kiss_help2"] = "Издать случайный звук"
 L["label_kiss_prepare_sound"] = "Включить звук снаряжения"
 L["label_kiss_primary_sound"] = "Включить звук основной атаки"
 L["label_kiss_secondary_sound"] = "Включить звук дополнительной атаки"
