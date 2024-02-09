@@ -55,7 +55,6 @@ SWEP.WorldModel = Model("models/humanheart/human_heart.mdl")
 SWEP.KissDistance = 48
 SWEP.KissTime = 0.30
 SWEP.NextKissTime = 0.68
-SWEP.KissDepth = 0.2
 SWEP.KissDamping = 0.14
 SWEP.KissFOVDecrease = 0.3
 SWEP.CameraViewMult = 1
@@ -122,7 +121,7 @@ function SWEP:PrimaryAttack()
     self:SetNextKiss(ct + self.KissTime)
     if SERVER and GetConVar("ttt2_kiss_primary_sound"):GetBool() then owner:EmitSound(sounds[math.random(#sounds)]) end
     self:PlayActivity(ACT_VM_PRIMARYATTACK)
-    self:SetHoldType("pistol")
+    self:SetHoldType("fist")
     self:TakePrimaryAmmo(1)
     if SERVER and self:Clip1() <= 0 then timer.Simple(GetConVar("ttt2_kiss_length"):GetFloat() + 0.1, function() if owner:IsActive() then self:Remove() end end) end
     nextAttack = ct + GetConVar("ttt2_kiss_delay"):GetFloat()
@@ -207,8 +206,11 @@ function SWEP:PlayActivity(act)
     self:SendWeaponAnim(act)
     local info = self.ActInfo[act]
     if not info then return false end
-    local nextAct = CurTime() + info.length
-    self:SetNextPrimaryFire(nextAct)
+    if info.length then
+        local nextAct = CurTime() + info.length
+        self:SetNextPrimaryFire(nextAct)
+    end
+
     self:UpdateNextIdle()
 end
 
@@ -455,6 +457,7 @@ if CLIENT then
         return ep, ea
     end
 
+    local idle_pose = 0
     function SWEP:PreDrawViewModel(vm, wep, ply)
         local ft = FrameTime()
         local attID = vm:LookupAttachment("camera")
@@ -477,12 +480,11 @@ if CLIENT then
         end
 
         local anim_idle = not self.ActInfo[act] and ply:IsOnGround() and ply:GetMoveType() == MOVETYPE_WALK
-        local pose = vm:GetPoseParameter("idle_pose")
         local pose_to = anim_idle and math.Clamp(ply:GetVelocity():Length() / ply:GetRunSpeed(), 0, 1) or 0
-        pose_to = math.EaseInOut(pose_to, self.AnimEaseIn, self.AnimEaseOut)
-        pose_to = Lerp(ft * 4, pose, pose_to)
+        idle_pose = Lerp(ft * 4, idle_pose, pose_to)
+        local pose = math.EaseInOut(idle_pose, self.AnimEaseIn, self.AnimEaseOut)
+        vm:SetPoseParameter("idle_pose", pose)
         vm:InvalidateBoneCache()
-        vm:SetPoseParameter("idle_pose", pose_to)
         render.SetBlend(0)
     end
 
@@ -491,7 +493,7 @@ if CLIENT then
     end
 
     function SWEP:PostDrawViewModel(vm, wep, ply)
-        local vm_depth = self.ViewModelFOV / ply:GetFOV() * (1 - self.KissDepth * self.KissMult)
+        local vm_depth = self.ViewModelFOV / ply:GetFOV()
         local hands = ply:GetHands()
         render.SetBlend(1)
         render.DepthRange(0, vm_depth)
@@ -519,6 +521,12 @@ if CLIENT then
             origin = LerpVector(self.KissMult, origin, pos)
             angles = LerpAngle(self.KissMult, angles, ang)
             fov = fov - self.KissMult * fov * self.KissFOVDecrease
+        end
+
+        local att = self.AttData
+        if att then
+            origin:Add(att.Pos)
+            angles:Add(att.Ang)
         end
         return origin, angles, fov
     end
