@@ -457,30 +457,38 @@ if CLIENT then
         return ep, ea
     end
 
+    function SWEP:ShouldAnimateKiss()
+        return math.Round(self.KissMult, 2) > 0
+    end
+
     local idle_pose = 0
     function SWEP:PreDrawViewModel(vm, wep, ply)
         local ft = FrameTime()
         local attID = vm:LookupAttachment("camera")
         local act = vm:GetSequenceActivity(vm:GetSequence())
-        if attID and attID >= 0 and not ply:KeyDown(IN_ZOOM) then
-            self.AttData = vm:GetAttachment(attID)
-            local attpos = self.AttData.Pos
-            local attang = self.AttData.Ang
+        if attID and attID >= 0 and ply:GetInternalVariable("m_bInZoom") ~= true then
             local vm_origin = vm:GetPos()
             local vm_angles = vm:GetAngles()
-            local mult = self.ViewModelFOV / ply:GetFOV() * self.CameraViewMult
+            vm:SetAngles(Angle(0, 0, 0))
+            vm:InvalidateBoneCache()
+            self.AttData = vm:GetAttachment(attID)
+            vm:SetAngles(vm_angles)
+            local attpos = self.AttData.Pos
+            local attang = self.AttData.Ang
             attpos:Sub(vm_origin)
             attang:RotateAroundAxis(attang:Up(), -90)
-            attang:Sub(vm_angles)
             attang:Normalize()
+            local mult = self.ViewModelFOV / ply:GetFOV() * self.CameraViewMult
             attpos:Mul(mult)
-            attang:Mul(mult)
+            attang:Normalize()
         elseif self.AttData then
             self.AttData = nil
         end
 
-        local anim_idle = not self.ActInfo[act] and ply:IsOnGround() and ply:GetMoveType() == MOVETYPE_WALK
-        local pose_to = anim_idle and math.Clamp(ply:GetVelocity():Length() / ply:GetRunSpeed(), 0, 1) or 0
+        local anim_idle = not self.ActInfo[act] and ply:GetMoveType() == MOVETYPE_WALK
+        local vel = ply:GetVelocity()
+        local speed = vel:Length()
+        local pose_to = anim_idle and math.Clamp(speed / ply:GetRunSpeed(), 0, 1) or 0
         idle_pose = Lerp(ft * 4, idle_pose, pose_to)
         local pose = math.EaseInOut(idle_pose, self.AnimEaseIn, self.AnimEaseOut)
         vm:SetPoseParameter("idle_pose", pose)
@@ -501,17 +509,13 @@ if CLIENT then
         render.DepthRange(0, 1)
     end
 
-    function SWEP:GetViewModelPosition(origin, angles)
+    function SWEP:CalcViewModelView(vm, origin, angles, vm_origin, vm_angles)
         if self:ShouldAnimateKiss() then
             local pos, ang = self:GetKissPos()
-            origin = LerpVector(self.KissMult, origin, pos)
-            angles = LerpAngle(self.KissMult, angles, ang)
+            vm_origin = LerpVector(self.KissMult, vm_origin, pos)
+            vm_angles = LerpAngle(self.KissMult, vm_angles, ang)
         end
-        return origin, angles
-    end
-
-    function SWEP:ShouldAnimateKiss()
-        return math.Round(self.KissMult, 2) > 0
+        return vm_origin, vm_angles
     end
 
     function SWEP:CalcView(ply, origin, angles, fov)
