@@ -501,6 +501,7 @@ if CLIENT then
     end
 
     function SWEP:PostDrawViewModel(vm, wep, ply)
+        if not IsValid(ply) then return end
         local vm_depth = self.ViewModelFOV / ply:GetFOV()
         local hands = ply:GetHands()
         render.SetBlend(1)
