@@ -504,6 +504,7 @@ if CLIENT then
         if not IsValid(ply) then return end
         local vm_depth = self.ViewModelFOV / ply:GetFOV()
         local hands = ply:GetHands()
+        if not IsValid(hands) then return end
         render.SetBlend(1)
         render.DepthRange(0, vm_depth)
         hands:DrawModel()
@@ -513,6 +514,7 @@ if CLIENT then
     function SWEP:CalcViewModelView(vm, origin, angles, vm_origin, vm_angles)
         if self:ShouldAnimateKiss() then
             local pos, ang = self:GetKissPos()
+            if pos == nil or ang == nil then return end
             vm_origin = LerpVector(self.KissMult, vm_origin, pos)
             vm_angles = LerpAngle(self.KissMult, vm_angles, ang)
         end
@@ -520,9 +522,11 @@ if CLIENT then
     end
 
     function SWEP:CalcView(ply, origin, angles, fov)
+        if not IsValid(ply) then return end
         if ply:GetViewEntity() ~= ply then return end
         if self:ShouldAnimateKiss() then
             local pos, ang = self:GetKissPos()
+            if pos == nil or ang == nil then return end
             origin = LerpVector(self.KissMult, origin, pos)
             angles = LerpAngle(self.KissMult, angles, ang)
             fov = fov - self.KissMult * fov * self.KissFOVDecrease
