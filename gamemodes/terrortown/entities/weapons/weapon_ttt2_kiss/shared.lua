@@ -462,7 +462,7 @@ if CLIENT then
     end
 
     local idle_pose = 0
-    function SWEP:PreDrawViewModel(vm, wep, ply)
+    function SWEP:PreDrawViewModel(vm, _, ply)
         local ft = FrameTime()
         local attID = vm:LookupAttachment("camera")
         local act = vm:GetSequenceActivity(vm:GetSequence())
@@ -500,7 +500,7 @@ if CLIENT then
         return true
     end
 
-    function SWEP:PostDrawViewModel(vm, wep, ply)
+    function SWEP:PostDrawViewModel(_, _, ply)
         if not IsValid(ply) then return end
         local vm_depth = self.ViewModelFOV / ply:GetFOV()
         local hands = ply:GetHands()
@@ -511,7 +511,7 @@ if CLIENT then
         render.DepthRange(0, 1)
     end
 
-    function SWEP:CalcViewModelView(vm, origin, angles, vm_origin, vm_angles)
+    function SWEP:CalcViewModelView(_, _, _, vm_origin, vm_angles)
         if self:ShouldAnimateKiss() then
             local pos, ang = self:GetKissPos()
             if pos == nil or ang == nil then return end
