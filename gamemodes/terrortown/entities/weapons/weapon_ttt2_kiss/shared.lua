@@ -88,12 +88,15 @@ end
 
 function SWEP:PrimaryAttack()
     local owner = self:GetOwner()
+    if not IsValid(owner) then return end
+    if SERVER then owner:LagCompensation(true) end
     local ct = CurTime()
     local pos = owner:GetShootPos()
     local dir = owner:GetAimVector()
     if nextAttack > ct then return end
     if SERVER and GetRoundState() ~= ROUND_ACTIVE then
         owner:ChatPrint("Round is not active, you can't use this weapon!")
+        owner:LagCompensation(false)
         return
     end
 
@@ -116,7 +119,11 @@ function SWEP:PrimaryAttack()
         })
     end
 
-    if not self:CanKiss(tr.Entity) then return end
+    if not self:CanKiss(tr.Entity) then
+        if SERVER then owner:LagCompensation(false) end
+        return
+    end
+
     self:SetKissVictim(tr.Entity)
     self:SetNextKiss(ct + self.KissTime)
     if SERVER and GetConVar("ttt2_kiss_primary_sound"):GetBool() then owner:EmitSound(sounds[math.random(#sounds)]) end
@@ -125,6 +132,7 @@ function SWEP:PrimaryAttack()
     self:TakePrimaryAmmo(1)
     if SERVER and self:Clip1() <= 0 then timer.Simple(GetConVar("ttt2_kiss_length"):GetFloat() + 0.1, function() if owner:IsActive() then self:Remove() end end) end
     nextAttack = ct + GetConVar("ttt2_kiss_delay"):GetFloat()
+    if SERVER then owner:LagCompensation(false) end
 end
 
 SWEP.NextSecondaryAttack = 0
