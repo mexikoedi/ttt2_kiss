@@ -93,7 +93,11 @@ function SWEP:PrimaryAttack()
     local ct = CurTime()
     local pos = owner:GetShootPos()
     local dir = owner:GetAimVector()
-    if nextAttack > ct then return end
+    if nextAttack > ct then
+        owner:LagCompensation(false)
+        return
+    end
+
     if SERVER and GetRoundState() ~= ROUND_ACTIVE then
         owner:ChatPrint("Round is not active, you can't use this weapon!")
         owner:LagCompensation(false)
