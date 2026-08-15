@@ -62,9 +62,9 @@ SWEP.AnimEaseIn = 0.2
 SWEP.AnimEaseOut = 0.8
 SWEP.KissOrigin = Vector(0, -9, 5)
 SWEP.KissAngles = Angle(-8, 0, 0)
-local kiss_hull = Vector(8, 8, 8)
+SWEP.NextAttack = 0
+SWEP.KissHull = Vector(8, 8, 8)
 local prepare_sound = "kiss_prepare.wav"
-local nextAttack = 0
 local sounds = {"kiss_start_1.wav", "kiss_start_2.wav", "kiss_start_3.wav", "kiss_start_4.wav", "kiss_start_5.wav", "kiss_start_6.wav",}
 local sounds2 = {"kiss_meme_1.wav", "kiss_meme_2.wav", "kiss_meme_3.wav",}
 SWEP.ActInfo = {
@@ -93,7 +93,7 @@ function SWEP:PrimaryAttack()
     local ct = CurTime()
     local pos = owner:GetShootPos()
     local dir = owner:GetAimVector()
-    if nextAttack > ct then
+    if self.NextAttack > ct then
         owner:LagCompensation(false)
         return
     end
@@ -117,8 +117,8 @@ function SWEP:PrimaryAttack()
             start = pos,
             endpos = pos + dir,
             filter = owner,
-            mins = kiss_hull * -1,
-            maxs = kiss_hull * 1,
+            mins = self.KissHull * -1,
+            maxs = self.KissHull * 1,
             mask = MASK_SHOT_HULL
         })
     end
@@ -135,7 +135,7 @@ function SWEP:PrimaryAttack()
     self:SetHoldType("fist")
     self:TakePrimaryAmmo(1)
     if SERVER and self:Clip1() <= 0 then timer.Simple(GetConVar("ttt2_kiss_length"):GetFloat() + 0.1, function() if owner:IsActive() then self:Remove() end end) end
-    nextAttack = ct + GetConVar("ttt2_kiss_delay"):GetFloat()
+    self.NextAttack = ct + GetConVar("ttt2_kiss_delay"):GetFloat()
     if SERVER then owner:LagCompensation(false) end
 end
 
@@ -149,6 +149,7 @@ end
 
 function SWEP:Deploy()
     local owner = self:GetOwner()
+    self:ResetKissState()
     self:PlayActivity(ACT_VM_DRAW)
     if SERVER then
         if GetConVar("ttt2_kiss_prepare_sound"):GetBool() then owner:EmitSound(prepare_sound) end
@@ -191,10 +192,12 @@ function SWEP:Think()
 
     local kissing = self:GetNextPrimaryFire() > ct
     local victim = self:GetKissVictim()
-    if IsValid(victim) and (not kissing or not self:CanKiss(victim)) then
-        self:AbortKiss()
-        kissing = false
-    elseif not IsValid(victim) then
+    if IsValid(victim) then
+        if not kissing then
+            self:AbortKiss()
+            kissing = false
+        end
+    else
         kissing = false
     end
 
@@ -206,11 +209,6 @@ function SWEP:Think()
         end
 
         self.KissMult = math.EaseInOut(self._kissMult, self.AnimEaseIn, self.AnimEaseOut)
-        if IsValid(victim) and self:ShouldAnimateKiss() then
-            self.lastKissVictim = victim
-        elseif not self:ShouldAnimateKiss() then
-            self.lastKissVictim = nil
-        end
     end
 end
 
@@ -322,6 +320,17 @@ function SWEP:SetupDataTables()
     self:NetworkVar("Entity", 0, "KissVictim")
 end
 
+function SWEP:ResetKissState()
+    self:SetNextKiss(0)
+    self:SetKissVictim(nil)
+    self:SetNextPrimaryFire(0)
+    self.NextAttack = 0
+    if CLIENT then
+        self._kissMult = 0
+        self.KissMult = 0
+    end
+end
+
 if CLIENT then
     function SWEP:AddToSettingsMenu(parent)
         local form = vgui.CreateTTT2Form(parent, "header_equipment_additional")
@@ -424,7 +433,7 @@ if CLIENT then
     function SWEP:GetKissPos()
         local owner = self:GetOwner()
         if not IsValid(owner) then return end
-        local victim = self.lastKissVictim
+        local victim = self:GetKissVictim()
         local ep, ea = owner:EyePos(), owner:EyeAngles()
         if IsValid(victim) and self:ShouldAnimateKiss() then
             local attID, pos, ang
